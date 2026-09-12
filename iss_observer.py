@@ -1,21 +1,3 @@
-"""ISS overhead notifier.
-
-Polls the ISS position every POLL_SECONDS. If the station is within +/-5 degrees of
-MY_LAT/MY_LONG and it is dark at that location, sends one email, then waits
-COOLDOWN_SECONDS before it can alert again (a pass lasts only a few minutes).
-
-Runs for RUN_SECONDS then exits, so a scheduler can start a fresh copy
-(GitHub Actions jobs are capped at 6 hours). Set RUN_SECONDS=0 to run forever.
-
-Environment variables:
-  MY_EMAIL      Gmail address (sender and recipient)
-  MY_PASSWORD   Gmail *app password* (16 characters, needs 2-step verification on the account)
-  MY_LAT        your latitude in decimal degrees, e.g. 1.306077
-  MY_LONG       your longitude in decimal degrees, e.g. 103.919894
-  RUN_SECONDS   optional, default 21000 (5h50m)
-  POLL_SECONDS  optional, default 60
-"""
-
 import os
 import smtplib
 import time
@@ -33,7 +15,6 @@ COOLDOWN_SECONDS = 20 * 60
 MY_LAT = float(os.environ["MY_LAT"])
 MY_LONG = float(os.environ["MY_LONG"])
 BOX_DEGREES = 5
-
 
 def is_iss_overhead() -> bool:
     response = requests.get("http://api.open-notify.org/iss-now.json", timeout=10)
@@ -67,7 +48,7 @@ def send_email() -> None:
     msg["Subject"] = "Look Up! The ISS is above you"
     msg["From"] = MY_EMAIL
     msg["To"] = MY_EMAIL
-    msg.set_content("The ISS is passing within 5 degrees of your position right now. Go outside and look up.")
+    msg.set_content("The ISS is passing within 5 degrees of your position right now. Look up!")
     with smtplib.SMTP("smtp.gmail.com", 587) as connection:
         connection.starttls()
         connection.login(MY_EMAIL, MY_PASSWORD)
